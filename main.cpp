@@ -28,7 +28,9 @@
 
 //这三个函数在http_conn.cpp中定义，改变链接属性
 extern int addfd(int epollfd, int fd, bool one_shot);
+
 extern int remove(int epollfd, int fd);
+
 extern int setnonblocking(int fd);
 
 //设置定时器相关参数
@@ -42,7 +44,7 @@ void sig_handler(int sig)
     //为保证函数的可重入性，保留原来的errno
     int save_errno = errno;
     int msg = sig;
-    send(pipefd[1], (char *)&msg, 1, 0);
+    send(pipefd[1], (char *) &msg, 1, 0);
     errno = save_errno;
 }
 
@@ -103,9 +105,14 @@ int main(int argc, char *argv[])
 
     addsig(SIGPIPE, SIG_IGN);
 
+    /**
+     * 个人注释
+     * 创建 (实际上是获取连接池的单例)
+     * 初始化
+     */
     //创建数据库连接池
     connection_pool *connPool = connection_pool::GetInstance();
-    connPool->init("localhost", "root", "root", "qgydb", 3306, 8);
+    connPool->init("localhost", "root", "passwd", "mydb", 3306, 8);
 
     //创建线程池
     threadpool<http_conn> *pool = NULL;
@@ -140,7 +147,7 @@ int main(int argc, char *argv[])
 
     int flag = 1;
     setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
-    ret = bind(listenfd, (struct sockaddr *)&address, sizeof(address));
+    ret = bind(listenfd, (struct sockaddr *) &address, sizeof(address));
     assert(ret >= 0);
     ret = listen(listenfd, 5);
     assert(ret >= 0);
@@ -187,7 +194,7 @@ int main(int argc, char *argv[])
                 struct sockaddr_in client_address;
                 socklen_t client_addrlength = sizeof(client_address);
 #ifdef listenfdLT
-                int connfd = accept(listenfd, (struct sockaddr *)&client_address, &client_addrlength);
+                int connfd = accept(listenfd, (struct sockaddr *) &client_address, &client_addrlength);
                 if (connfd < 0)
                 {
                     LOG_ERROR("%s:errno is:%d", "accept error", errno);
@@ -246,7 +253,6 @@ int main(int argc, char *argv[])
                 continue;
 #endif
             }
-
             else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
             {
                 //服务器端关闭连接，移除对应的定时器
@@ -259,7 +265,7 @@ int main(int argc, char *argv[])
                 }
             }
 
-            //处理信号
+                //处理信号
             else if ((sockfd == pipefd[0]) && (events[i].events & EPOLLIN))
             {
                 int sig;
@@ -279,21 +285,21 @@ int main(int argc, char *argv[])
                     {
                         switch (signals[i])
                         {
-                        case SIGALRM:
-                        {
-                            timeout = true;
-                            break;
-                        }
-                        case SIGTERM:
-                        {
-                            stop_server = true;
-                        }
+                            case SIGALRM:
+                            {
+                                timeout = true;
+                                break;
+                            }
+                            case SIGTERM:
+                            {
+                                stop_server = true;
+                            }
                         }
                     }
                 }
             }
 
-            //处理客户连接上接收到的数据
+                //处理客户连接上接收到的数据
             else if (events[i].events & EPOLLIN)
             {
                 util_timer *timer = users_timer[sockfd].timer;
