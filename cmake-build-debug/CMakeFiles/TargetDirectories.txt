@@ -1,3 +1,0 @@
-/home/tenire/Desktop/CLion-workspace/TinyWebServer/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/tenire/Desktop/CLion-workspace/TinyWebServer/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/tenire/Desktop/CLion-workspace/TinyWebServer/cmake-build-debug/CMakeFiles/server.dir

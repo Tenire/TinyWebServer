@@ -22,5 +22,5 @@ add_executable(server
         log/log.h
         threadpool/threadpool.h
         timer/lst_timer.h
-        main.cpp)
+        main.cpp Notes.md)
 target_link_libraries(server -lpthread -lmysqlclient)
